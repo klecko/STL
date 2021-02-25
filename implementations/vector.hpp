@@ -1,7 +1,7 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include <types.hpp>
+#include <stddef.h>
 
 #define VECTOR_INITIAL_SIZE 1
 
