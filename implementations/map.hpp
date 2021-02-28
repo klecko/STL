@@ -19,6 +19,10 @@ public:
 			return (*n).s;
 		}
 	}
+
+	inline bool count(const T& t) {
+		return inh::_find(pair<T, Q>(t, Q())).f;
+	}
 };
 
 #endif
