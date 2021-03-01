@@ -28,6 +28,7 @@
 #define STRING_HPP
 
 #include <stddef.h>
+#include <stdint.h>
 
 struct default_allocator {
 	static void* static_allocate(size_t bytes) {
@@ -52,7 +53,9 @@ public:
 	basic_string& operator=(const basic_string& other);
 	basic_string& operator=(basic_string&& other);
 	basic_string  operator+(const basic_string& other) const;
+	basic_string  operator+(char c) const;
 	basic_string& operator+=(const basic_string& other);
+	basic_string& operator+=(char c);
 	char& operator[](size_t i);
 	const char& operator[](size_t i) const;
 	bool operator<(const basic_string& other) const;
@@ -84,6 +87,9 @@ private:
 
 template<typename allocator>
 basic_string<allocator> operator+(const char* s1, const basic_string<allocator>& s2);
+
+template<typename allocator>
+basic_string<allocator> operator+(char c, const basic_string<allocator>& s);
 
 
 template<typename allocator>
@@ -174,8 +180,22 @@ inline basic_string<allocator> basic_string<allocator>::operator+(const basic_st
 }
 
 template<typename allocator>
+inline basic_string<allocator> basic_string<allocator>::operator+(char c) const {
+	basic_string<allocator> copy(*this);
+	copy += c;
+	return copy;
+}
+
+template<typename allocator>
 inline basic_string<allocator>& basic_string<allocator>::operator+=(const basic_string& other) {
 	append(other.m_first, other.m_last);
+	return *this;
+}
+
+template<typename allocator>
+inline basic_string<allocator>& basic_string<allocator>::operator+=(char c) {
+	char s[2] = {c, 0};
+	append(s, s+1);
 	return *this;
 }
 
@@ -234,8 +254,13 @@ inline size_t basic_string<allocator>::size() const
 
 template<typename allocator>
 inline void basic_string<allocator>::reserve(size_t capacity) {
-	if (m_first + capacity + 1 <= m_capacity)
+	// Don't reserve if we already have enough capacity, but also check if
+	// we are wrapping around at the end of the address space
+	if ((m_first + capacity + 1 <= m_capacity) &&
+	    !((uintptr_t)m_first + capacity + 1 < (uintptr_t)m_first))
+	{
 		return;
+	}
 
 	const size_t size = (size_t)(m_last - m_first);
 
@@ -270,9 +295,14 @@ inline void basic_string<allocator>::clear() {
 
 template<typename allocator>
 inline void basic_string<allocator>::append(const char* first, const char* last) {
+	// Check if we need more capacity, or if we're wrapping around at the end
+	// of the address space
 	const size_t newsize = (size_t)((m_last - m_first) + (last - first) + 1);
-	if (m_first + newsize > m_capacity)
+	if ((m_first + newsize > m_capacity) ||
+	    (uintptr_t)m_first + newsize < (uintptr_t)m_first)
+	{
 		reserve((newsize * 3) / 2);
+	}
 
 	for (; first != last; ++m_last, ++first)
 		*m_last = *first;
@@ -360,6 +390,13 @@ template<typename allocator>
 basic_string<allocator> operator+(const char* s1, const basic_string<allocator>& s2) {
 	return basic_string<allocator>(s1) + s2;
 }
+
+template<typename allocator>
+basic_string<allocator> operator+(char c, const basic_string<allocator>& s) {
+	char tmp[2] = {c, 0};
+	return basic_string<allocator>(tmp) + s;
+}
+
 
 typedef basic_string<default_allocator> string;
 
