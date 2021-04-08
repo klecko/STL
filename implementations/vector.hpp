@@ -11,16 +11,6 @@ protected:
 	size_t sz;
 	size_t allocated;
 
-	void more() {
-		allocated *= 2;
-
-		T* newdata = new T[allocated];
-		for(size_t i=0; i<sz; i++) newdata[i] = data[i];
-
-		if(data) delete [] data;
-		data = newdata;
-	}
-
 public:
 	vector() {
 		data = new T[VECTOR_INITIAL_SIZE];
@@ -52,6 +42,22 @@ public:
 		return sz;
 	}
 
+	inline size_t ptr() const {
+		return data;
+	}
+
+	inline void reserve(size_t new_allocated) {
+		if (new_allocated < allocated)
+			return;
+		allocated = new_allocated;
+
+		T* new_data = new T[allocated];
+		for(size_t i=0; i<sz; i++) new_data[i] = data[i];
+
+		if(data) delete [] data;
+		data = new_data;
+	}
+
 	void disp_right(size_t idx, size_t count) {
 		if(sz + count > allocated) {
 			// We need to reallocate.
@@ -80,7 +86,7 @@ public:
 	void push_back(const T& e) {
 		data[sz++] = e;
 		if(sz == allocated)
-			more();
+			reserve(allocated*2);
 	}
 
 	void push_back(const vector<T>& other) {
