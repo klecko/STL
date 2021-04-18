@@ -46,6 +46,10 @@ public:
 		return data;
 	}
 
+	inline size_t empty() const {
+		return size() == 0;
+	}
+
 	inline void reserve(size_t new_allocated) {
 		if (new_allocated < allocated)
 			return;
@@ -224,6 +228,12 @@ public:
 
 	inline const_iterator cend() const {
 		return data+sz;
+	}
+
+	inline iterator find(T val) {
+		iterator ret = begin();
+		for (; *ret != val && ret != end(); ++ret);
+		return ret;
 	}
 };
 
