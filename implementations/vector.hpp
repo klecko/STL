@@ -88,9 +88,9 @@ public:
 
 	// Back.
 	void push_back(const T& e) {
-		data[sz++] = e;
 		if(sz == allocated)
 			reserve(allocated*2);
+		data[sz++] = e;
 	}
 
 	void push_back(const vector<T>& other) {
