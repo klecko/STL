@@ -48,6 +48,7 @@ public:
 	basic_string(basic_string&& other);
 	basic_string(const char* sz);
 	basic_string(const char* sz, size_t len);
+	basic_string(size_t len, char c);
 	~basic_string();
 
 	basic_string& operator=(const basic_string& other);
@@ -103,9 +104,7 @@ inline basic_string<allocator>::basic_string()
 
 template<typename allocator>
 inline basic_string<allocator>::basic_string(const basic_string& other)
-	: m_first(m_buffer)
-	, m_last(m_buffer)
-	, m_capacity(m_buffer + c_nbuffer)
+	: basic_string()
 {
 	reserve(other.size());
 	append(other.m_first, other.m_last);
@@ -132,9 +131,7 @@ inline basic_string<allocator>::basic_string(basic_string&& other)
 
 template<typename allocator>
 inline basic_string<allocator>::basic_string(const char* sz)
-	: m_first(m_buffer)
-	, m_last(m_buffer)
-	, m_capacity(m_buffer + c_nbuffer)
+	: basic_string()
 {
 	size_t len = 0;
 	for (const char* it = sz; *it; ++it)
@@ -146,12 +143,19 @@ inline basic_string<allocator>::basic_string(const char* sz)
 
 template<typename allocator>
 inline basic_string<allocator>::basic_string(const char* sz, size_t len)
-	: m_first(m_buffer)
-	, m_last(m_buffer)
-	, m_capacity(m_buffer + c_nbuffer)
+	: basic_string()
 {
 	reserve(len);
 	append(sz, sz + len);
+}
+
+template<typename allocator>
+inline basic_string<allocator>::basic_string(size_t len, char c)
+	: basic_string()
+{
+	resize(len);
+	for (size_t i = 0; i < len; i++)
+		m_first[i] = c;
 }
 
 template<typename allocator>
